@@ -1,9 +1,11 @@
 package com.trinity.toolbox
 
 import android.content.Context
+import android.content.Intent
 import android.hardware.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_sensors.*
 
 class SensorsActivity : AppCompatActivity(), SensorEventListener {
@@ -24,14 +26,16 @@ class SensorsActivity : AppCompatActivity(), SensorEventListener {
         super.onResume()
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
         sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        textView.text = ""
-        for (sensor in sensors!!) {
-            textView.text = "${textView.text}name = ${sensor.name}\n"
-            textView.text = "${textView.text}type = ${sensor.type}\n"
-            textView.text = "${textView.text}vendor = ${sensor.vendor}\n"
-            textView.text = "${textView.text}version = ${sensor.version}\n"
-            textView.text = "${textView.text}max = ${sensor.maximumRange}\n"
-            textView.text = "${textView.text}resolution = ${sensor.resolution}\n\n"
+        val adapter = SensorItemAdapter(this, sensors!!)
+        listView.adapter = adapter
+        listView.setOnItemClickListener { _, _, position, _ ->
+            if(sensors!![position].type <= 20){
+                val i = Intent(this, SensorActivity::class.java)
+                i.putExtra("sensor_type", sensors!![position].type)
+                startActivity(i)
+            } else {
+                Toast.makeText(this, "Увы, данный тип датчиков не поддерживается", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
