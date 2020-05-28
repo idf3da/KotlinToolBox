@@ -22,7 +22,9 @@ fun PPower(a: FloatArray): Float {
 
 class PunchActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
-    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayerSwoosh: MediaPlayer? = null
+    private var mediaPlayerNowGo: MediaPlayer? = null
+    private var mediaPlayerKnockOut: MediaPlayer? = null
     private lateinit var startButton: Button
     private lateinit var resetButton: Button
     private var acls: Sensor? = null
@@ -35,7 +37,9 @@ class PunchActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_punch)
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.beep)
+        mediaPlayerSwoosh = MediaPlayer.create(this, R.raw.swoosh)
+        mediaPlayerNowGo = MediaPlayer.create(this, R.raw.now_go)
+        mediaPlayerKnockOut = MediaPlayer.create(this, R.raw.knockout)
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         acls = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
@@ -45,8 +49,12 @@ class PunchActivity : AppCompatActivity(), SensorEventListener {
 
 
         startButton.setOnClickListener {
+            if (!switch ){
+                mediaPlayerNowGo?.start()
+            }
             switch = !switch
             start.text = switch t "Stop recording" ?: "Start recording"
+            i = 0
         }
         resetButton.setOnClickListener {
             listView.text = ""
@@ -58,7 +66,7 @@ class PunchActivity : AppCompatActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         acls?.also { light ->
-            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_GAME)
+            sensorManager.registerListener(this, light, SensorManager.SENSOR_DELAY_FASTEST)
         }
     }
 
@@ -91,8 +99,14 @@ class PunchActivity : AppCompatActivity(), SensorEventListener {
                 maxN = result
                 score.text = "Best score: ${maxN}"
             }
-            if (result > 7) {
-                mediaPlayer?.start()
+            if (result > 2) {
+                mediaPlayerSwoosh?.start()
+            }
+            if (result > 13) {
+                mediaPlayerKnockOut?.start()
+                switch = false
+                start.text = "Start recording"
+                i = 0
             }
         }
     }
